@@ -125,7 +125,13 @@
             </div>
         </div>
     </div>
-
+    <div class="mt-auto text-end">
+        <button class="btn btn-sm btn-outline-light" 
+                onclick="shareSchedule('${item.Mata_Pelajaran}', '${item.Tanggal}')">
+            <i class="fas fa-share me-2"></i>Bagikan
+        </button>
+    </div>
+</div>
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycby9sPywic_2ifeYBzE3dQMHfrwkR4-fQv-bNx74HMduvcq5Rr4r9MY6GGEYNqI44WRI/exec';
         let allData = [];
@@ -229,7 +235,16 @@
                 card.className = 'col-12 col-md-6 col-lg-4';
                 card.innerHTML = `
                     <div class="glass-card h-100 p-4 d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="participants mb-3">
+        ${item.Peserta.map(peserta => `
+            <span class="participant-chip">
+                <i class="fas fa-user me-2"></i>
+                ${peserta}
+            </span>
+        `).join('')}
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="schedule-badge">${item.Institusi}</span>
                             <div class="d-flex align-items-center gap-2">
                                 ${diffDays === 0 ? 
