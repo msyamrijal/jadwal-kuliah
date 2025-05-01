@@ -1,132 +1,256 @@
 const API_URL = "https://script.google.com/macros/s/AKfycby9sPywic_2ifeYBzE3dQMHfrwkR4-fQv-bNx74HMduvcq5Rr4r9MY6GGEYNqI44WRI/exec";
+const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 menit
 let currentData = [];
 
-document.getElementById('login-btn').addEventListener('click', async () => {
-  const password = document.getElementById('admin-password').value;
-  
-  try {
-    // Coba ambil data untuk verifikasi password
-    const response = await fetch(API_URL);
-    const data = await response.json();
-    
-    // Verifikasi password
-    if (data.some(item => item.Password === password)) {
-      document.getElementById('auth-section').style.display = 'none';
-      document.getElementById('admin-panel').style.display = 'block';
+/*********************
+ *  INITIAL SETUP    *
+ *********************/
+document.addEventListener('DOMContentLoaded', async () => {
+  const session = {
+    isLoggedIn: localStorage.getItem('isLoggedIn') === 'true',
+    loginTime: localStorage.getItem('loginTime')
+  };
+
+  if (session.isLoggedIn && Date.now() - session.loginTime < SESSION_TIMEOUT) {
+    showLoading();
+    try {
+      const data = await loadDataFromServer();
       initAdminPanel(data);
-    } else {
-      throw new Error("Password salah");
+      showAdminPanel();
+    } catch (error) {
+      handleLogout();
+      alert('Sesi telah berakhir: ' + error.message);
+    } finally {
+      hideLoading();
     }
-  } catch (error) {
-    alert(error.message);
+  } else {
+    handleLogout();
   }
 });
 
+/*********************
+ *  EVENT HANDLERS   *
+ *********************/
+document.getElementById('login-btn').addEventListener('click', handleLogin);
+document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+async function handleLogin() {
+  showLoading();
+  try {
+    const password = document.getElementById('admin-password').value;
+    const data = await loadDataFromServer();
+    
+    if (!data.some(item => item.Password === password)) {
+      throw new Error('Password salah');
+    }
+
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('loginTime', Date.now());
+    initAdminPanel(data);
+    showAdminPanel();
+  } catch (error) {
+    alert(error.message);
+    handleLogout();
+  } finally {
+    hideLoading();
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('loginTime');
+  window.location.reload();
+}
+
+/*********************
+ *  CORE FUNCTIONS   *
+ *********************/
+async function loadDataFromServer() {
+  const response = await fetch(API_URL);
+  if (!response.ok) throw new Error('Gagal memuat data');
+  return response.json();
+}
+
 function initAdminPanel(data) {
   currentData = data;
-  
-  const adminPanel = document.getElementById('admin-panel');
-  adminPanel.innerHTML = `
-    <div class="row">
-      <div class="col-md-6">
-        <h5>Tambah/Edit Data</h5>
-        <form id="data-form" class="mb-4">
-          <input type="hidden" id="data-id">
-          
-          <div class="mb-3">
-            <label class="form-label">Institusi</label>
-            <select id="institusi" class="form-select" required>
-              <option value="PTIQ">PTIQ</option>
-              <option value="PKU B">PKU B</option>
-              <option value="PKUP">PKUP</option>
-            </select>
+  renderDataList();
+  setupFormValidation();
+  setupEventListeners();
+}
+
+function renderDataList() {
+  const container = document.getElementById('data-list');
+  container.innerHTML = currentData
+    .map(item => `
+      <div class="list-group-item ${item.selected ? 'active' : ''}" 
+           data-id="${item.ID}"
+           onclick="handleSelect('${item.ID}')">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-1">${item.Mata_Pelajaran}</h6>
+            <small>${item.Institusi} • ${item.Tanggal}</small>
           </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Mata Pelajaran</label>
-            <input type="text" id="mapel" class="form-control" required>
+          <div>
+            <button class="btn btn-sm btn-warning" onclick="handleEdit('${item.ID}', event)">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" onclick="handleDelete('${item.ID}', event)">
+              <i class="bi bi-trash"></i>
+            </button>
           </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Tanggal</label>
-            <input type="date" id="tanggal" class="form-control" required>
-          </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Peserta (pisahkan dengan koma)</label>
-            <textarea id="peserta" class="form-control" required></textarea>
-          </div>
-          
-          <button type="submit" class="btn btn-primary">Simpan</button>
-          <button type="button" id="reset-btn" class="btn btn-secondary">Baru</button>
-        </form>
-      </div>
-      
-      <div class="col-md-6">
-        <h5>Daftar Jadwal</h5>
-        <div id="data-list" class="list-group">
-          ${renderDataList(data)}
         </div>
       </div>
-    </div>
-  `;
-  
-  // Event listeners
-  document.getElementById('data-form').addEventListener('submit', handleSubmit);
-  document.getElementById('reset-btn').addEventListener('click', resetForm);
+    `).join('');
 }
 
-function renderDataList(data) {
-  return data.map(item => `
-    <a href="#" class="list-group-item list-group-item-action" 
-       data-id="${item.ID}" 
-       onclick="loadDataToForm('${item.ID}')">
-      <strong>${item.Mata_Pelajaran}</strong><br>
-      <small>${item.Institusi} - ${item.Tanggal}</small>
-    </a>
-  `).join('');
+/*********************
+ *  FORM MANAGEMENT  *
+ *********************/
+function setupFormValidation() {
+  const form = document.getElementById('data-form');
+  const validationRules = {
+    '#institusi': value => !!value,
+    '#mapel': value => value.length >= 3,
+    '#tanggal': value => /^\d{4}-\d{2}-\d{2}$/.test(value),
+    '#peserta': value => value.split(',').length >= 1
+  };
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (!validateForm(validationRules)) return;
+    
+    showLoading();
+    try {
+      const formData = getFormData();
+      await submitData(formData);
+      const newData = await loadDataFromServer();
+      initAdminPanel(newData);
+      resetForm();
+    } catch (error) {
+      alert('Error: ' + error.message);
+    } finally {
+      hideLoading();
+    }
+  });
 }
 
-async function handleSubmit(e) {
-  e.preventDefault();
-  
-  const formData = {
+function validateForm(rules) {
+  return Object.entries(rules).every(([selector, validate]) => {
+    const element = document.querySelector(selector);
+    const isValid = validate(element.value);
+    element.classList.toggle('is-invalid', !isValid);
+    return isValid;
+  });
+}
+
+function getFormData() {
+  return {
     id: document.getElementById('data-id').value,
     institusi: document.getElementById('institusi').value,
     mapel: document.getElementById('mapel').value,
     tanggal: document.getElementById('tanggal').value,
     peserta: document.getElementById('peserta').value,
-    password: document.getElementById('admin-password').value,
-    action: document.getElementById('data-id').value ? 'update' : 'add'
+    action: document.getElementById('data-id').value ? 'update' : 'add',
+    password: localStorage.getItem('password')
   };
+}
+
+async function submitData(formData) {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    body: new URLSearchParams(formData)
+  });
   
+  if (!response.ok) throw new Error(await response.text());
+  return response.text();
+}
+
+/*********************
+ *  EVENT HANDLERS   *
+ *********************/
+window.handleSelect = function(id) {
+  currentData = currentData.map(item => ({
+    ...item,
+    selected: item.ID.toString() === id
+  }));
+  renderDataList();
+};
+
+window.handleEdit = function(id, event) {
+  event.stopPropagation();
+  const data = currentData.find(item => item.ID.toString() === id);
+  if (!data) return;
+
+  populateForm(data);
+  handleSelect(id);
+};
+
+window.handleDelete = async function(id, event) {
+  event.stopPropagation();
+  if (!confirm('Yakin ingin menghapus data ini?')) return;
+
+  showLoading();
   try {
-    const response = await fetch(API_URL, {
+    await fetch(API_URL, {
       method: 'POST',
-      body: new URLSearchParams(formData)
+      body: new URLSearchParams({
+        action: 'delete',
+        id: id,
+        password: localStorage.getItem('password')
+      })
     });
     
-    const result = await response.text();
-    alert(result);
-    window.location.reload(); // Refresh data
-    
+    const newData = await loadDataFromServer();
+    initAdminPanel(newData);
   } catch (error) {
-    alert("Error: " + error.message);
+    alert('Gagal menghapus: ' + error.message);
+  } finally {
+    hideLoading();
   }
+};
+
+/*********************
+ *  HELPER FUNCTIONS *
+ *********************/
+function populateForm(data) {
+  document.getElementById('data-id').value = data.ID;
+  document.getElementById('institusi').value = data.Institusi;
+  document.getElementById('mapel').value = data.Mata_Pelajaran;
+  document.getElementById('tanggal').value = data.Tanggal;
+  document.getElementById('peserta').value = Array.isArray(data.Peserta) 
+    ? data.Peserta.join(', ') 
+    : data.Peserta;
 }
 
 function resetForm() {
   document.getElementById('data-form').reset();
   document.getElementById('data-id').value = '';
+  currentData = currentData.map(item => ({ ...item, selected: false }));
+  renderDataList();
 }
 
-window.loadDataToForm = function(id) {
-  const data = currentData.find(item => item.ID.toString() === id);
-  if (!data) return;
-  
-  document.getElementById('data-id').value = data.ID;
-  document.getElementById('institusi').value = data.Institusi;
-  document.getElementById('mapel').value = data.Mata_Pelajaran;
-  document.getElementById('tanggal').value = data.Tanggal;
-  document.getElementById('peserta').value = data.Peserta.join(', ');
-};
+function showAdminPanel() {
+  document.getElementById('auth-section').style.display = 'none';
+  document.getElementById('admin-panel').style.display = 'block';
+}
+
+function showLoading() {
+  document.getElementById('loading').style.display = 'flex';
+}
+
+function hideLoading() {
+  document.getElementById('loading').style.display = 'none';
+}
+
+/*********************
+ *  INITIAL SETUP    *
+ *********************/
+function setupEventListeners() {
+  // Auto-format peserta input
+  document.getElementById('peserta').addEventListener('blur', function() {
+    this.value = this.value.split(',')
+      .map(s => s.trim())
+      .filter(s => s)
+      .join(', ');
+  });
+}
