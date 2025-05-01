@@ -3,296 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Kuliah Terdekat - PTIQ</title>
+    <title>Jadwal Kuliah Terkini</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --past-date-color: #95a5a6;
-            --timeline-color: #3498db;
+            --gradient-1: #0f0c29;
+            --gradient-2: #302b63;
+            --accent-color: #00c9ff;
         }
 
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
             min-height: 100vh;
+            color: white;
+            font-family: 'Segoe UI', system-ui, sans-serif;
         }
 
-        .navbar {
-            background: var(--primary-color) !important;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        .timeline-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .timeline-container {
-            position: relative;
-            padding-left: 40px;
-            margin-top: 30px;
-        }
-
-        .timeline-container::before {
-            content: '';
-            position: absolute;
-            left: 15px;
-            top: 0;
-            height: 100%;
-            width: 2px;
-            background: var(--timeline-color);
-        }
-
-        .schedule-card {
-            position: relative;
-            margin-bottom: 30px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-            left: 25px;
-        }
-
-        .schedule-card:hover {
-            transform: translateX(10px);
-        }
-
-        .schedule-card.past {
-            opacity: 0.6;
-            background: #f8f9fa;
+        .timeline-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
         .date-badge {
-            position: absolute;
-            left: -70px;
-            top: 15px;
-            background: var(--secondary-color);
-            color: white;
-            padding: 8px 15px;
+            background: var(--accent-color);
+            width: fit-content;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-weight: 600;
+        }
+
+        .countdown {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .institusi-tag {
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
-            min-width: 120px;
-            text-align: center;
+            padding: 3px 12px;
+            font-size: 0.85em;
         }
 
-        .timeline-dot {
-            position: absolute;
-            left: -33px;
-            top: 20px;
-            width: 16px;
-            height: 16px;
+        .participant-avatar {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: var(--timeline-color);
-            border: 3px solid white;
-        }
-
-        .past .timeline-dot {
-            background: var(--past-date-color);
-        }
-
-        .search-container {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
-
-        #searchInput {
-            border: none;
-            border-radius: 15px;
-            padding: 15px 25px;
-        }
-
-        .no-results {
-            min-height: 300px;
+            background: var(--accent-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            opacity: 0.5;
+            font-size: 0.8em;
+        }
+
+        #searchInput {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: white;
+            border-radius: 12px;
+            padding: 14px 24px;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: none;
         }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent py-3">
         <div class="container">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-calendar-alt me-2"></i>
-                Jadwal Kuliah PTIQ
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="fas fa-calendar-day me-2"></i>
+                <span class="fw-bold">Jadwal Terkini</span>
             </a>
-            <div class="d-flex">
-                <a href="/admin" class="btn btn-outline-light">
-                    <i class="fas fa-lock me-2"></i>Admin
+            <div class="d-flex align-items-center gap-3">
+                <a href="/admin" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-user-shield me-2"></i>Admin
                 </a>
             </div>
         </div>
     </nav>
 
     <div class="container py-5">
-        <div class="search-container p-4 mb-5">
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="input-group">
-                        <input type="text" id="searchInput" class="form-control" 
-                               placeholder="Cari mata kuliah atau peserta...">
-                        <button class="btn btn-primary">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="btn-group w-100">
-                        <button type="button" 
-                                class="btn btn-outline-primary active" 
-                                data-filter="upcoming">
-                            Mendatang
-                        </button>
-                        <button type="button" 
-                                class="btn btn-outline-primary" 
-                                data-filter="all">
-                            Semua Jadwal
-                        </button>
-                    </div>
+        <div class="row mb-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="input-group">
+                    <input type="text" id="searchInput" class="form-control" 
+                           placeholder="Cari mata kuliah, institusi, atau peserta...">
+                    <button class="btn btn-outline-light" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
                 </div>
             </div>
         </div>
 
         <div id="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Memuat...</span>
-            </div>
-            <p class="mt-3 text-muted">Sedang memuat jadwal...</p>
+            <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+            <p class="mt-3">Memuat jadwal terkini...</p>
         </div>
 
-        <div class="timeline-container">
-            <div id="jadwal-container"></div>
-            <div id="no-results" class="no-results d-none">
-                <div class="text-center">
-                    <i class="fas fa-calendar-times fa-4x mb-3"></i>
-                    <h4>Tidak ada jadwal yang sesuai</h4>
-                    <p class="text-muted">Coba gunakan kata kunci lain atau filter berbeda</p>
-                </div>
+        <div id="jadwal-container" class="row g-4"></div>
+
+        <div id="no-events" class="text-center py-5 d-none">
+            <div class="py-5">
+                <i class="fas fa-calendar-check fa-3x mb-4"></i>
+                <h3>Tidak ada jadwal yang akan datang</h3>
+                <p class="text-muted">Semua jadwal sudah terlaksana atau belum tersedia</p>
             </div>
         </div>
     </div>
 
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycby9sPywic_2ifeYBzE3dQMHfrwkR4-fQv-bNx74HMduvcq5Rr4r9MY6GGEYNqI44WRI/exec';
-        let allData = [];
-        let showPast = false;
-        let searchTerm = '';
-
-        // Format tanggal Indonesia
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const options = { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric'
-            };
-            return date.toLocaleDateString('id-ID', options);
-        }
-
-        // Filter dan urutkan data
-        function processData() {
-            const today = new Date().toISOString().split('T')[0];
-            
-            return allData
-                .filter(item => {
-                    const matchesSearch = [
-                        item.Mata_Pelajaran,
-                        item.Institusi,
-                        item.Peserta.join(' ')
-                    ].some(text => text.toLowerCase().includes(searchTerm.toLowerCase()));
-                    
-                    const dateCondition = showPast ? true : item.Tanggal >= today;
-                    
-                    return matchesSearch && dateCondition;
-                })
-                .sort((a, b) => a.Tanggal.localeCompare(b.Tanggal));
-        }
-
-        // Render jadwal
-        function renderData(data) {
-            const container = document.getElementById('jadwal-container');
-            const noResults = document.getElementById('no-results');
-            const today = new Date().toISOString().split('T')[0];
-            
-            container.innerHTML = '';
-            
-            if (data.length === 0) {
-                noResults.classList.remove('d-none');
-                return;
-            }
-            
-            noResults.classList.add('d-none');
-
-            container.innerHTML = data.map(item => {
-                const isPast = item.Tanggal < today;
-                
-                return `
-                    <div class="schedule-card ${isPast ? 'past' : ''} p-4 mb-4">
-                        <div class="date-badge">
-                            ${formatDate(item.Tanggal)}
-                        </div>
-                        <div class="timeline-dot"></div>
-                        
-                        <h4 class="mb-3">${item.Mata_Pelajaran}</h4>
-                        
-                        <div class="d-flex align-items-center mb-3">
-                            <i class="fas fa-university me-2 text-primary"></i>
-                            <strong>${item.Institusi}</strong>
-                        </div>
-                        
-                        <div class="participants mb-3">
-                            ${item.Peserta.map(peserta => `
-                                <span class="badge bg-light text-dark me-1 mb-1">
-                                    <i class="fas fa-user me-2"></i>${peserta}
-                                </span>
-                            `).join('')}
-                        </div>
-                        
-                        ${isPast ? `
-                            <div class="text-end text-muted small">
-                                <i class="fas fa-clock me-1"></i>Sudah lewat
-                            </div>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Event listeners
-        document.querySelectorAll('[data-filter]').forEach(button => {
-            button.addEventListener('click', function() {
-                document.querySelectorAll('[data-filter]').forEach(btn => 
-                    btn.classList.remove('active'));
-                this.classList.add('active');
-                showPast = this.dataset.filter === 'all';
-                renderData(processData());
-            });
-        });
-
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            searchTerm = e.target.value;
-            renderData(processData());
-        });
-
-        // Load data awal
+        
         async function loadData() {
             try {
                 const response = await fetch(API_URL);
-                allData = await response.json();
-                renderData(processData());
-                document.getElementById('loading').style.display = 'none';
+                const rawData = await response.json();
+                
+                // Filter dan sortir data
+                const today = new Date().toISOString().split('T')[0];
+                const processedData = rawData
+                    .filter(item => item.Tanggal >= today)
+                    .sort((a, b) => a.Tanggal.localeCompare(b.Tanggal))
+                    .map(item => ({
+                        ...item,
+                        daysRemaining: calculateDaysRemaining(item.Tanggal)
+                    }));
+                
+                renderData(processedData);
             } catch (error) {
-                console.error("Gagal memuat data:", error);
-                document.getElementById('loading').innerHTML = `
-                    <div class="text-danger">
-                        <i class="fas fa-exclamation-triangle fa-2x"></i>
-                        <p class="mt-2">Gagal memuat data</p>
-                    </div>
-                `;
+                console.error("Error:", error);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
             }
         }
 
-        // Jalankan saat halaman dimuat
+        function calculateDaysRemaining(targetDate) {
+            const today = new Date();
+            const target = new Date(targetDate);
+            const diffTime = target - today;
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+
+        function renderData(data) {
+            const container = document.getElementById('jadwal-container');
+            const noEvents = document.getElementById('no-events');
+            
+            container.innerHTML = '';
+            
+            if(data.length === 0) {
+                noEvents.classList.remove('d-none');
+                return;
+            }
+            
+            noEvents.classList.add('d-none');
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'col-12 col-lg-6';
+                card.innerHTML = `
+                    <div class="timeline-card h-100 p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex gap-2 align-items-center">
+                                <span class="date-badge">
+                                    ${new Date(item.Tanggal).toLocaleDateString('id-ID', {
+                                        day: 'numeric',
+                                        month: 'short'
+                                    })}
+                                </span>
+                                <span class="institusi-tag">${item.Institusi}</span>
+                            </div>
+                            <span class="countdown">
+                                <i class="fas fa-clock me-1"></i>
+                                ${item.daysRemaining} hari lagi
+                            </span>
+                        </div>
+                        
+                        <h4 class="mb-3">${item.Mata_Pelajaran}</h4>
+                        
+                        <div class="d-flex flex-wrap gap-2 mb-3">
+                            ${item.Peserta.map((peserta, index) => `
+                                <div class="participant-avatar" 
+                                     data-bs-toggle="tooltip" 
+                                     title="${peserta}">
+                                    ${getInitials(peserta)}
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                ${new Date(item.Tanggal).toLocaleDateString('id-ID', {
+                                    weekday: 'long',
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                })}
+                            </small>
+                            <button class="btn btn-sm btn-outline-light" 
+                                    onclick="handleReminder('${item.Mata_Pelajaran}', '${item.Tanggal}')">
+                                <i class="fas fa-bell me-2"></i>Ingatkan
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Init tooltips
+            [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+              .forEach(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+        }
+
+        function getInitials(name) {
+            return name.split(' ')
+                       .map(part => part[0])
+                       .join('')
+                       .substring(0, 2)
+                       .toUpperCase();
+        }
+
+        function handleReminder(title, date) {
+            if(Notification.permission === 'granted') {
+                scheduleNotification(title, date);
+            } else if(Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if(permission === 'granted') {
+                        scheduleNotification(title, date);
+                    }
+                });
+            }
+        }
+
+        function scheduleNotification(title, date) {
+            const targetDate = new Date(date);
+            const now = new Date();
+            const timeDiff = targetDate - now;
+            
+            if(timeDiff > 0) {
+                setTimeout(() => {
+                    new Notification('Pengingat Jadwal', {
+                        body: `${title} akan dimulai hari ini!`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/447/447438.png'
+                    });
+                }, timeDiff);
+                
+                alert(`Pengingat untuk "${title}" akan muncul pada hari H`);
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('searchInput').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.timeline-card');
+            
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(searchTerm) ? 'block' : 'none';
+            });
+        });
+
         document.addEventListener('DOMContentLoaded', loadData);
     </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
