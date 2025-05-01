@@ -94,31 +94,7 @@ function formatDate(dateString) {
     
     return date.toLocaleDateString('id-ID', options);
 }
-function shareSchedule(title, date) {
-    const formattedDate = formatDate(date);
-    const shareData = {
-        title: `Bagikan Jadwal: ${title}`,
-        text: `Jadwal ${title} akan dilaksanakan pada ${formattedDate}`,
-        url: window.location.href
-    };
 
-    try {
-        if (navigator.share) {
-            navigator.share(shareData);
-        } else {
-            // Fallback untuk desktop
-            const textArea = document.createElement('textarea');
-            textArea.value = `${shareData.text}\n${shareData.url}`;
-            document.body.appendChild(textArea);
-            textArea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textArea);
-            alert('Tautan telah disalin ke clipboard!');
-        }
-    } catch (error) {
-        console.error('Error sharing:', error);
-    }
-}
 // Tambahkan method untuk status tanggal
 function getDateStatus(dateString) {
     const date = new Date(dateString);
