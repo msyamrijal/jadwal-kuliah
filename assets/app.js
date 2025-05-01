@@ -49,4 +49,33 @@ function renderJadwal(data) {
     
     data.forEach(item => {
         const cardHTML = `
-            <div class="col-md-6 col-lg-4
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card card-jadwal h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="badge bg-primary">${item.Institusi}</span>
+                            <small class="text-muted">${item.Tanggal}</small>
+                        </div>
+                        <h5 class="card-title">${item.Mata_Pelajaran}</h5>
+                        <p class="card-text">
+                            <i class="bi bi-people me-2"></i>
+                            ${item.Peserta.join(', ')}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.innerHTML += cardHTML;
+    });
+}
+
+// Event Listeners
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('filterInstitusi').addEventListener('change', applyFilters);
+document.getElementById('filterMapel').addEventListener('change', applyFilters);
+
+// Auto-refresh
+setInterval(init, 120000);
+
+// Initialize
+init();
