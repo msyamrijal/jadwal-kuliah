@@ -1,132 +1,164 @@
 const API_URL = "https://script.google.com/macros/s/AKfycby9sPywic_2ifeYBzE3dQMHfrwkR4-fQv-bNx74HMduvcq5Rr4r9MY6GGEYNqI44WRI/exec";
 let currentData = [];
+let isLoggedIn = false;
 
+// Login Handler
 document.getElementById('login-btn').addEventListener('click', async () => {
   const password = document.getElementById('admin-password').value;
   
+  if (!password) {
+    alert('Masukkan password terlebih dahulu');
+    return;
+  }
+
   try {
-    // Coba ambil data untuk verifikasi password
     const response = await fetch(API_URL);
     const data = await response.json();
     
-    // Verifikasi password
+    // Cek password
     if (data.some(item => item.Password === password)) {
+      isLoggedIn = true;
+      initAdminPanel(data);
       document.getElementById('auth-section').style.display = 'none';
       document.getElementById('admin-panel').style.display = 'block';
-      initAdminPanel(data);
     } else {
-      throw new Error("Password salah");
+      throw new Error('Password salah');
     }
   } catch (error) {
     alert(error.message);
+    document.getElementById('admin-password').value = '';
   }
 });
 
+// Initialize Admin Panel
 function initAdminPanel(data) {
   currentData = data;
-  
-  const adminPanel = document.getElementById('admin-panel');
-  adminPanel.innerHTML = `
-    <div class="row">
-      <div class="col-md-6">
-        <h5>Tambah/Edit Data</h5>
-        <form id="data-form" class="mb-4">
-          <input type="hidden" id="data-id">
-          
-          <div class="mb-3">
-            <label class="form-label">Institusi</label>
-            <select id="institusi" class="form-select" required>
-              <option value="PTIQ">PTIQ</option>
-              <option value="PKU B">PKU B</option>
-              <option value="PKUP">PKUP</option>
-            </select>
+  renderDataList();
+  setupForm();
+}
+
+// Render Data List
+function renderDataList() {
+  const container = document.getElementById('data-list');
+  container.innerHTML = `
+    <div class="list-group">
+      ${currentData.map(item => `
+        <a href="#" class="list-group-item list-group-item-action ${item.selected ? 'active' : ''}" 
+           data-id="${item.ID}"
+           onclick="loadDataToForm('${item.ID}')">
+          <div class="d-flex justify-content-between">
+            <div>
+              <strong>${item.Mata_Pelajaran}</strong><br>
+              <small>${item.Institusi} • ${item.Tanggal}</small>
+            </div>
+            <button class="btn btn-sm btn-danger" onclick="handleDelete('${item.ID}', event)">Hapus</button>
           </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Mata Pelajaran</label>
-            <input type="text" id="mapel" class="form-control" required>
-          </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Tanggal</label>
-            <input type="date" id="tanggal" class="form-control" required>
-          </div>
-          
-          <div class="mb-3">
-            <label class="form-label">Peserta (pisahkan dengan koma)</label>
-            <textarea id="peserta" class="form-control" required></textarea>
-          </div>
-          
-          <button type="submit" class="btn btn-primary">Simpan</button>
-          <button type="button" id="reset-btn" class="btn btn-secondary">Baru</button>
-        </form>
-      </div>
-      
-      <div class="col-md-6">
-        <h5>Daftar Jadwal</h5>
-        <div id="data-list" class="list-group">
-          ${renderDataList(data)}
-        </div>
-      </div>
+        </a>
+      `).join('')}
     </div>
   `;
-  
-  // Event listeners
-  document.getElementById('data-form').addEventListener('submit', handleSubmit);
-  document.getElementById('reset-btn').addEventListener('click', resetForm);
 }
 
-function renderDataList(data) {
-  return data.map(item => `
-    <a href="#" class="list-group-item list-group-item-action" 
-       data-id="${item.ID}" 
-       onclick="loadDataToForm('${item.ID}')">
-      <strong>${item.Mata_Pelajaran}</strong><br>
-      <small>${item.Institusi} - ${item.Tanggal}</small>
-    </a>
-  `).join('');
-}
-
-async function handleSubmit(e) {
-  e.preventDefault();
-  
-  const formData = {
-    id: document.getElementById('data-id').value,
-    institusi: document.getElementById('institusi').value,
-    mapel: document.getElementById('mapel').value,
-    tanggal: document.getElementById('tanggal').value,
-    peserta: document.getElementById('peserta').value,
-    password: document.getElementById('admin-password').value,
-    action: document.getElementById('data-id').value ? 'update' : 'add'
-  };
-  
-  try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      body: new URLSearchParams(formData)
-    });
-    
-    const result = await response.text();
-    alert(result);
-    window.location.reload(); // Refresh data
-    
-  } catch (error) {
-    alert("Error: " + error.message);
-  }
-}
-
-function resetForm() {
-  document.getElementById('data-form').reset();
-  document.getElementById('data-id').value = '';
-}
-
+// Load Data to Form
 window.loadDataToForm = function(id) {
   const data = currentData.find(item => item.ID.toString() === id);
   if (!data) return;
-  
+
+  // Update form fields
   document.getElementById('data-id').value = data.ID;
   document.getElementById('institusi').value = data.Institusi;
   document.getElementById('mapel').value = data.Mata_Pelajaran;
   document.getElementById('tanggal').value = data.Tanggal;
-  document.getElementById('peserta').value = data.Peserta.join(', ');
+  document.getElementById('peserta').value = Array.isArray(data.Peserta) ? data.Peserta.join(', ') : data.Peserta;
+  
+  // Highlight selected item
+  currentData = currentData.map(item => ({
+    ...item,
+    selected: item.ID === data.ID
+  }));
+  renderDataList();
 };
+
+// Setup Form Submission
+function setupForm() {
+  const form = document.getElementById('data-form');
+  
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+      id: document.getElementById('data-id').value,
+      institusi: document.getElementById('institusi').value,
+      mapel: document.getElementById('mapel').value,
+      tanggal: document.getElementById('tanggal').value,
+      peserta: document.getElementById('peserta').value,
+      password: document.getElementById('admin-password').value,
+      action: document.getElementById('data-id').value ? 'update' : 'add'
+    };
+
+    // Validasi
+    if (!formData.tanggal || !/^\d{4}-\d{2}-\d{2}$/.test(formData.tanggal)) {
+      alert('Format tanggal tidak valid (YYYY-MM-DD)');
+      return;
+    }
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        body: new URLSearchParams(formData)
+      });
+      
+      const result = await response.text();
+      alert(result);
+      
+      // Refresh data
+      const newData = await fetch(API_URL).then(res => res.json());
+      initAdminPanel(newData);
+      resetForm();
+      
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
+  };
+}
+
+// Delete Handler
+window.handleDelete = async function(id, event) {
+  event.stopPropagation();
+  
+  if (!confirm('Yakin ingin menghapus data ini?')) return;
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      body: new URLSearchParams({
+        action: 'delete',
+        id: id,
+        password: document.getElementById('admin-password').value
+      })
+    });
+    
+    const result = await response.text();
+    alert(result);
+    
+    // Refresh data
+    const newData = await fetch(API_URL).then(res => res.json());
+    initAdminPanel(newData);
+    
+  } catch (error) {
+    alert('Gagal menghapus: ' + error.message);
+  }
+};
+
+// Reset Form
+function resetForm() {
+  document.getElementById('data-form').reset();
+  document.getElementById('data-id').value = '';
+  currentData = currentData.map(item => ({ ...item, selected: false }));
+  renderDataList();
+}
+
+// Initial Load
+if (window.location.pathname.includes('/admin')) {
+  document.getElementById('admin-panel').style.display = 'none';
+}
