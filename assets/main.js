@@ -1,4 +1,4 @@
-const API_URL = https://script.google.com/macros/s/AKfycby29AeoAZFGqTnBxgsqAPYAplE-npavbDqy4pdjbNo/dev;
+const API_URL = https://script.google.com/macros/s/AKfycby9sPywic_2ifeYBzE3dQMHfrwkR4-fQv-bNx74HMduvcq5Rr4r9MY6GGEYNqI44WRI/exec;
 
 async function loadJadwal() {
   try {
