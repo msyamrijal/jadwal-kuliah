@@ -1,65 +1,112 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Kuliah Interaktif</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <title>Smooth Dual Transition</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #ffffff;
+            transition: background 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toggle-button {
+            position: fixed;
+            top: 70px;
+            right: 40px;
+            z-index: 3;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+        }
+
+        .material-icons {
+            font-size: 32px;
+            color: #039be5;
+            transition: transform 0.3s;
+            z-index: 4;
+            position: relative;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 70px;
+            right: 40px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            transform: translate(50%, -50%) scale(0);
+            transform-origin: center;
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .dark-overlay {
+            background: #000;
+        }
+
+        .light-overlay {
+            background: #fff;
+        }
+
+        body.dark-mode {
+            background: #000;
+        }
+
+        body.dark-mode .material-icons {
+            color: #039be5;
+        }
+
+        .scale-up {
+            transform: translate(50%, -50%) scale(100);
+        }
+    </style>
 </head>
 <body>
-    <!-- Overlay untuk efek transisi tema -->
-    <div class="theme-transition-overlay" id="themeOverlay"></div>
+    <button class="toggle-button" onclick="toggleMode()">
+        <i class="material-icons" id="modeIcon">dark_mode</i>
+    </button>
+    <div class="overlay dark-overlay"></div>
+    <div class="overlay light-overlay"></div>
 
-    <!-- Header Section -->
-    <header class="header">
-        <div class="header-top">
-            <div class="brand">
-                <i class="fas fa-calendar-alt"></i>
-                <h1>Jadwal Kuliah</h1>
-            </div>
-            <button id="themeToggle" class="theme-toggle">
-                <span class="theme-icon"></span>
-            </button>
-        </div>
-        
-        <div class="header-bottom">
-            <div class="search-container">
-                <input type="text" id="searchInput" class="search-input" placeholder="Cari jadwal...">
-                <i class="fas fa-search"></i>
-            </div>
-            <nav class="filter-nav" id="filterNav"></nav>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Loading State -->
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Memuat Jadwal...</p>
-        </div>
-
-        <!-- Schedule Grid -->
-        <div class="schedule-grid" id="scheduleGrid"></div>
-
-        <!-- Empty State -->
-        <div class="empty-state" id="emptyState">
-            <i class="fas fa-calendar-times"></i>
-            <h3>Jadwal tidak ditemukan</h3>
-            <p>Coba kata kunci atau filter berbeda</p>
-        </div>
-    </main>
-
-    <!-- Participant Modal -->
-    <div class="participant-modal" id="participantModal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h3 id="modalTitle"></h3>
-            <div class="modal-schedules" id="modalSchedules"></div>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
+    <script>
+        function toggleMode() {
+            const body = document.body;
+            const isDark = body.classList.contains('dark-mode');
+            const darkOverlay = document.querySelector('.dark-overlay');
+            const lightOverlay = document.querySelector('.light-overlay');
+            const icon = document.getElementById('modeIcon');
+            
+            // Tentukan overlay yang akan digunakan
+            const activeOverlay = isDark ? lightOverlay : darkOverlay;
+            
+            // Aktifkan animasi
+            activeOverlay.classList.add('scale-up');
+            
+            setTimeout(() => {
+                // Toggle mode
+                body.classList.toggle('dark-mode');
+                icon.textContent = body.classList.contains('dark-mode') 
+                    ? 'light_mode' 
+                    : 'dark_mode';
+                
+                // Reset animasi
+                activeOverlay.classList.remove('scale-up');
+                void activeOverlay.offsetWidth; // Trigger reflow
+            }, 1000);
+        }
+    </script>
 </body>
 </html>
