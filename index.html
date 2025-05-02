@@ -8,8 +8,10 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <!-- Overlay untuk efek transisi tema -->
     <div class="theme-overlay" id="themeOverlay"></div>
-    <!-- Header Section -->
+
+    <!-- Header -->
     <header class="header">
         <div class="header-top">
             <div class="brand">
@@ -30,7 +32,7 @@
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Konten Utama -->
     <main class="main-content">
         <!-- Loading State -->
         <div class="loading" id="loading">
@@ -38,10 +40,10 @@
             <p>Memuat Jadwal...</p>
         </div>
 
-        <!-- Schedule Grid -->
+        <!-- Grid Jadwal -->
         <div class="schedule-grid" id="scheduleGrid"></div>
 
-        <!-- Empty State -->
+        <!-- Tampilan Kosong -->
         <div class="empty-state" id="emptyState">
             <i class="fas fa-calendar-times"></i>
             <h3>Jadwal tidak ditemukan</h3>
@@ -49,7 +51,7 @@
         </div>
     </main>
 
-    <!-- Participant Modal -->
+    <!-- Modal Partisipan -->
     <div class="participant-modal" id="participantModal">
         <div class="modal-content">
             <span class="close-modal">&times;</span>
