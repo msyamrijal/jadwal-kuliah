@@ -97,4 +97,35 @@ const renderSchedules = (data) => {
         const card = document.createElement('article');
         card.className = 'schedule-card';
         card.innerHTML = `
-            <div class="card-header
+            <div class="card-header">
+                <h3>${item.Mata_Pelajaran}</h3>
+                <span>${formatDate(item.Tanggal)}</span>
+            </div>
+            <div class="institute">${item.Institusi}</div>
+            <div class="participants">
+                ${item.Peserta.map(peserta => `
+                    <span class="participant-tag">${peserta}</span>
+                `).join('')}
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+};
+
+// Helpers
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long'
+    });
+};
+
+// Event Listeners
+document.getElementById('searchInput').addEventListener('input', filterSchedules);
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+// Initialization
+initTheme();
+fetchData();
