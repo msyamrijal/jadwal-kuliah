@@ -1,69 +1,202 @@
 :root {
-    --gradient-1: #6a11cb;
-    --gradient-2: #2575fc;
-    --accent-color: #ff6b6b;
+    /* Light Theme */
+    --bg-color: #f8f9fa;
+    --text-color: #2d3436;
+    --primary-color: #6c5ce7;
+    --secondary-color: #a8a4ff;
+    --accent-color: #ff7675;
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --glass-effect: blur(10px);
+    
+    /* Dark Theme */
+    --dark-bg-color: #1a1a1a;
+    --dark-text-color: #ffffff;
+    --dark-card-bg: rgba(30, 30, 30, 0.9);
+}
+
+/* Dark Mode */
+[data-theme="dark"] {
+    --bg-color: var(--dark-bg-color);
+    --text-color: var(--dark-text-color);
+    --card-bg: var(--dark-card-bg);
 }
 
 body {
-    background: linear-gradient(135deg, var(--gradient-1), var(--gradient-2));
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: var(--text-color);
     min-height: 100vh;
-    color: white;
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: transform 0.3s ease;
-}
-
-.glass-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.schedule-badge {
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    padding: 5px 15px;
-}
-
-.participant-chip {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 5px 10px;
-    margin: 3px;
-    display: inline-block;
-}
-
-#searchInput {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    border-radius: 25px;
-    padding: 15px 25px;
-}
-
-#searchInput::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
-.loading-spinner {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    100% { transform: rotate(360deg); }
-}
-
-.date-indicator {
-    font-size: 0.9rem;
-    padding: 3px 10px;
-    border-radius: 15px;
+    transition: background 0.3s ease, color 0.3s ease;
 }
 
 .navbar {
-    background: rgba(0, 0, 0, 0.2) !important;
-    backdrop-filter: blur(5px);
+    padding: 1.5rem 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: var(--glass-effect);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    text-decoration: none;
+}
+
+.nav-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.theme-btn, .admin-btn {
+    background: var(--card-bg);
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.theme-btn:hover, .admin-btn:hover {
+    transform: scale(1.1);
+}
+
+.search-section {
+    max-width: 800px;
+    margin: 2rem auto;
+}
+
+.search-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+#searchInput {
+    width: 100%;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    border: none;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+#searchInput::placeholder {
+    color: #666;
+}
+
+.search-container i {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.filter-buttons button {
+    background: var(--card-bg);
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-buttons button.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.jadwal-card {
+    background: var(--card-bg);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    backdrop-filter: var(--glass-effect);
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+}
+
+.jadwal-card:hover {
+    transform: translateY(-5px);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.institusi-badge {
+    background: rgba(var(--primary-color), 0.1);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.tanggal-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #666;
+}
+
+.peserta-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.peserta-item {
+    background: rgba(var(--primary-color), 0.1);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.loading-state {
+    text-align: center;
+    padding: 4rem 0;
+}
+
+.spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 3px solid var(--primary-color);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 0;
+    color: #666;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
