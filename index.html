@@ -3,63 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Kuliah Interaktif</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <title>Jadwal Kuliah dengan Ripple Effect</title>
+    <style>
+        :root {
+            --color-light: #ffffff;
+            --color-dark: #1a1a1a;
+            --color-primary: #6D9F71;
+            --ripple-duration: 0.6s;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            transition: background-color var(--ripple-duration) ease;
+            background-color: var(--color-light);
+        }
+
+        body.dark {
+            background-color: var(--color-dark);
+            color: var(--color-light);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px;
+            border: none;
+            border-radius: 50%;
+            background-color: var(--color-primary);
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .ripple-effect {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            animation: ripple var(--ripple-duration) linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(100);
+                opacity: 0;
+            }
+        }
+
+        body.dark .ripple-effect {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
 </head>
 <body>
-    <!-- Efek ripple untuk tema -->
-    <div class="theme-ripple" id="themeRipple"></div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    
+    <script>
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'ripple-effect';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            document.body.appendChild(ripple);
+            
+            ripple.addEventListener('animationend', () => {
+                ripple.remove();
+            });
+        }
 
-    <!-- Header Section -->
-    <header class="header">
-        <div class="header-top">
-            <div class="brand">
-                <i class="fas fa-calendar-alt"></i>
-                <h1>Jadwal Kuliah</h1>
-            </div>
-            <button id="themeToggle" class="theme-toggle">
-                <span class="theme-icon"></span>
-            </button>
-        </div>
-        
-        <div class="header-bottom">
-            <div class="search-container">
-                <input type="text" id="searchInput" class="search-input" placeholder="Cari jadwal...">
-                <i class="fas fa-search"></i>
-            </div>
-            <nav class="filter-nav" id="filterNav"></nav>
-        </div>
-    </header>
+        function toggleTheme() {
+            const button = document.querySelector('.theme-toggle');
+            const rect = button.getBoundingClientRect();
+            const x = rect.left + rect.width/2;
+            const y = rect.top + rect.height/2;
+            
+            createRipple(x, y);
+            
+            setTimeout(() => {
+                document.body.classList.toggle('dark');
+                localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+            }, 300); // Delay tema berubah di tengah animasi
+        }
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Loading State -->
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p>Memuat Jadwal...</p>
-        </div>
-
-        <!-- Schedule Grid -->
-        <div class="schedule-grid" id="scheduleGrid"></div>
-
-        <!-- Empty State -->
-        <div class="empty-state" id="emptyState">
-            <i class="fas fa-calendar-times"></i>
-            <h3>Jadwal tidak ditemukan</h3>
-            <p>Coba kata kunci atau filter berbeda</p>
-        </div>
-    </main>
-
-    <!-- Participant Modal -->
-    <div class="participant-modal" id="participantModal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h3 id="modalTitle"></h3>
-            <div class="modal-schedules" id="modalSchedules"></div>
-        </div>
-    </div>
-
-    <script src="app.js"></script>
+        // Load tema yang disimpan
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+        }
+    </script>
 </body>
 </html>
