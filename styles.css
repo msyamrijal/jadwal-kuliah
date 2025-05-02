@@ -1,0 +1,203 @@
+/* Base Styles */
+:root {
+    --color-primary: #8BAAAD;
+    --color-secondary: #E3DCD2;
+    --color-accent: #D4A373;
+    --color-text: #2D3033;
+    --color-background: #F9F6F0;
+    --color-surface: #FFFFFF;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] {
+    --color-primary: #7A9A9D;
+    --color-secondary: #3A3A3A;
+    --color-text: #F0F0F0;
+    --color-background: #2D2D2D;
+    --color-surface: #3A3A3A;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui;
+    background: var(--color-background);
+    color: var(--color-text);
+    transition: background 0.3s ease;
+}
+
+/* Header Styles */
+.header {
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    border-bottom: 1px solid var(--color-secondary);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 1.25rem;
+    color: var(--color-primary);
+}
+
+.header-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.header-bottom {
+    padding: 1rem 2rem;
+    background: var(--color-secondary);
+}
+
+.search-container {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto 1rem;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 2rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.search-container i {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-primary);
+}
+
+/* Filter Navigation */
+.filter-nav {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.filter-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 1rem;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filter-btn.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+/* Schedule Grid */
+.schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+}
+
+.schedule-card {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease;
+}
+
+.schedule-card:hover {
+    transform: translateY(-3px);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    color: var(--color-primary);
+}
+
+.participants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.participant-tag {
+    background: var(--color-secondary);
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+}
+
+/* Loading State */
+.loading {
+    text-align: center;
+    padding: 4rem 0;
+}
+
+.spinner {
+    width: 3rem;
+    height: 3rem;
+    border: 3px solid var(--color-primary);
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 4rem 0;
+    color: var(--color-primary);
+    display: none;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-top {
+        padding: 1rem;
+    }
+    
+    .header-bottom {
+        padding: 1rem;
+    }
+    
+    .schedule-grid {
+        padding: 1rem;
+        grid-template-columns: 1fr;
+    }
+}
