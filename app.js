@@ -15,9 +15,14 @@ const toggleTheme = () => {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcon(newTheme);
+    // Trigger circle animation
+    themeToggle.classList.add('active');
+    
+    setTimeout(() => {
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        themeToggle.classList.remove('active');
+    }, 300); // Match transition duration
 };
 
 const updateThemeIcon = (theme) => {
