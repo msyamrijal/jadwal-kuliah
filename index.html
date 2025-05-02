@@ -3,60 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ripple Theme Transition</title>
+    <title>Animated Theme Toggle</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --light-bg: #ffffff;
+            --light-bg: #f8f9fa;
             --dark-bg: #1a1a1a;
             --primary-color: #6D9F71;
-            --ripple-duration: 0.8s;
+            --toggle-size: 50px;
         }
 
         body {
             margin: 0;
             min-height: 100vh;
-            font-family: Arial, sans-serif;
-            position: relative;
-            overflow: hidden;
+            font-family: 'Segoe UI', system-ui;
             background: var(--light-bg);
             color: #333;
-            transition: background-color 0.01s;
+            transition: all 0.4s ease;
         }
 
         body.dark {
-            background-color: var(--dark-bg);
+            background: var(--dark-bg);
             color: #fff;
-        }
-
-        .theme-ripple {
-            position: absolute;
-            width: 100vmax;
-            height: 100vmax;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            pointer-events: none;
-            animation: ripple var(--ripple-duration) ease-out;
-        }
-
-        .dark .theme-ripple {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        @keyframes ripple {
-            to {
-                transform: translate(-50%, -50%) scale(4);
-                opacity: 0;
-            }
         }
 
         .theme-toggle {
             position: fixed;
             top: 20px;
             right: 20px;
-            width: 50px;
-            height: 50px;
+            width: var(--toggle-size);
+            height: var(--toggle-size);
             border: none;
             border-radius: 50%;
             background: var(--primary-color);
@@ -64,70 +40,87 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 1000;
+            overflow: hidden;
             transition: transform 0.3s ease;
         }
 
-        .theme-toggle i {
-            color: white;
-            font-size: 1.2rem;
-            transition: transform var(--ripple-duration) ease;
+        .theme-toggle:active {
+            transform: scale(0.95);
         }
 
-        .theme-toggle:active {
-            transform: scale(0.9);
+        .toggle-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.2rem;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .moon {
+            opacity: 1;
+        }
+
+        .sun {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(90deg);
+        }
+
+        /* Dark mode state */
+        .dark .moon {
+            opacity: 0;
+            transform: translate(-50%, -50%) rotate(-90deg);
+        }
+
+        .dark .sun {
+            opacity: 1;
+            transform: translate(-50%, -50%) rotate(0);
+        }
+
+        /* Background animation */
+        .toggle-bg {
+            position: absolute;
+            width: 200%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            transform: translateX(-75%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark .toggle-bg {
+            transform: translateX(25%);
         }
     </style>
 </head>
 <body>
     <button class="theme-toggle" id="toggleBtn">
-        <i class="fas fa-moon"></i>
+        <div class="toggle-inner">
+            <div class="toggle-bg"></div>
+            <i class="icon moon fas fa-moon"></i>
+            <i class="icon sun fas fa-sun"></i>
+        </div>
     </button>
 
     <script>
         const toggleBtn = document.getElementById('toggleBtn');
         let isDark = localStorage.getItem('theme') === 'dark';
-        
-        function createRipple(x, y) {
-            const ripple = document.createElement('div');
-            ripple.className = 'theme-ripple';
-            ripple.style.left = x + 'px';
-            ripple.style.top = y + 'px';
-            
-            document.body.appendChild(ripple);
-            
-            // Hapus ripple setelah animasi selesai
-            setTimeout(() => ripple.remove(), 800);
-        }
 
-        function toggleTheme(e) {
-            // Dapatkan posisi tombol
-            const rect = toggleBtn.getBoundingClientRect();
-            const x = rect.left + rect.width/2;
-            const y = rect.top + rect.height/2;
-            
-            // Buat efek ripple
-            createRipple(x, y);
-            
-            // Toggle tema
+        function toggleTheme() {
             isDark = !isDark;
             document.body.classList.toggle('dark', isDark);
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            
-            // Update icon
-            const icon = toggleBtn.querySelector('i');
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-            
-            // Animasi rotasi icon
-            icon.style.transform = `rotate(${isDark ? 180 : 0}deg)`;
         }
 
-        // Inisialisasi tema
-        if(isDark) {
-            document.body.classList.add('dark');
-            toggleBtn.querySelector('i').className = 'fas fa-sun';
-        }
-
+        // Initialize theme
+        if(isDark) document.body.classList.add('dark');
+        
         toggleBtn.addEventListener('click', toggleTheme);
     </script>
 </body>
