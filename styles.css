@@ -3,10 +3,12 @@
 /* BASE STYLES & VARIABLES */
 /* ====================== */
 :root {
+    /* Light Theme */
     --color-primary: #6D9F71;
     --color-secondary: #E3E8D3;
     --color-accent: #FFB86F;
     --color-text: #2D3033;
+    --color-text-rgb: 45, 48, 51;
     --color-background: #F9F6F0;
     --color-surface: #FFFFFF;
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
@@ -16,11 +18,13 @@
 }
 
 [data-theme="dark"] {
-    --color-primary: #7BAE80;
+    /* Dark Theme */
+    --color-primary: #8BAAAD;
     --color-secondary: #3A3A3A;
     --color-text: #F0F0F0;
-    --color-background: #2D2D2D;
-    --color-surface: #3A3A3A;
+    --color-text-rgb: 240, 240, 240;
+    --color-background: #1A1A1A;
+    --color-surface: #2D2D2D;
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
     --glass-bg: rgba(30, 30, 30, 0.5);
 }
@@ -40,9 +44,7 @@ body {
     background: var(--color-background);
     color: var(--color-text);
     line-height: 1.6;
-    transition: background-color 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow-x: hidden;
+    transition: var(--transition-theme);
 }
 
 /* ====================== */
@@ -92,11 +94,11 @@ body {
     gap: 1rem;
     font-size: 1.25rem;
     color: var(--color-primary);
-    transition: var(--transition-theme);
 }
 
 .brand i {
     font-size: 1.5rem;
+    transition: var(--transition-theme);
 }
 
 .header-bottom {
@@ -140,7 +142,7 @@ body {
 }
 
 /* ====================== */
-/* SEARCH & FILTERS */
+/* SEARCH & FILTERS - PERBAIKAN */
 /* ====================== */
 .search-container {
     position: relative;
@@ -150,13 +152,27 @@ body {
 
 .search-input {
     width: 100%;
-    padding: 0.75rem 2rem;
+    padding: 0.75rem 2.5rem 0.75rem 1.5rem;
     border: none;
     border-radius: 2rem;
     background: var(--color-surface);
     color: var(--color-text);
     font-size: 1rem;
     transition: var(--transition-theme);
+}
+
+.search-input::placeholder {
+    color: rgba(var(--color-text-rgb), 0.7);
+    transition: var(--transition-theme);
+}
+
+.search-container i {
+    position: absolute;
+    right: 1.2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-primary);
+    pointer-events: none;
 }
 
 .filter-nav {
@@ -198,12 +214,19 @@ body {
     padding: 1.5rem;
     box-shadow: var(--shadow-sm);
     transition: var(--transition-theme);
+    color: var(--color-text);
 }
 
 .card-header {
     display: flex;
     justify-content: space-between;
     margin-bottom: 1rem;
+}
+
+.institute {
+    color: var(--color-primary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
 }
 
 .participants {
@@ -214,6 +237,7 @@ body {
 
 .participant-tag {
     background: var(--color-secondary);
+    color: var(--color-text);
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
     font-size: 0.875rem;
@@ -222,7 +246,7 @@ body {
 }
 
 /* ====================== */
-/* MODAL STYLES */
+/* MODAL STYLES - PERBAIKAN */
 /* ====================== */
 .participant-modal {
     display: none;
@@ -232,18 +256,25 @@ body {
     width: 100%;
     height: 100%;
     background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(2px);
     z-index: 2000;
 }
 
 .modal-content {
+    position: relative;
     background: var(--color-surface);
+    color: var(--color-text);
     width: 90%;
     max-width: 600px;
     margin: 2rem auto;
     padding: 2rem;
     border-radius: var(--radius-md);
-    position: relative;
-    transition: var(--transition-theme);
+    animation: modalSlide 0.3s ease;
+}
+
+@keyframes modalSlide {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 .close-modal {
@@ -253,6 +284,11 @@ body {
     font-size: 1.5rem;
     cursor: pointer;
     color: var(--color-text);
+    transition: var(--transition-theme);
+}
+
+.close-modal:hover {
+    color: var(--color-primary);
 }
 
 /* ====================== */
@@ -282,6 +318,9 @@ body {
     padding: 4rem 0;
     color: var(--color-primary);
     display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
 }
 
 /* ====================== */
@@ -292,11 +331,32 @@ body {
         padding: 1rem;
     }
     
-    .schedule-grid {
+    .header-bottom {
         padding: 1rem;
     }
     
-    .theme-toggle {
-        right: 1rem;
+    .schedule-grid {
+        padding: 1rem;
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .brand {
+        font-size: 1rem;
+    }
+    
+    .search-input {
+        padding: 0.75rem 2rem 0.75rem 1rem;
+    }
+    
+    .filter-btn {
+        padding: 0.5rem;
+        font-size: 0.875rem;
     }
 }
