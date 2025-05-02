@@ -8,39 +8,46 @@ let allSchedules = [];
 const initTheme = () => {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeIcon(savedTheme);
 };
 
-const toggleTheme = () => {
-    const themeToggle = document.getElementById('themeToggle');
-    const ripple = document.getElementById('themeRipple');
+const toggleTheme = (e) => {
+    const themeToggle = e.currentTarget;
+    const overlay = document.getElementById('themeOverlay');
     
-    // Get button position
+    // Dapatkan posisi tombol relatif terhadap viewport
     const rect = themeToggle.getBoundingClientRect();
-    const x = rect.left + rect.width/2 + window.pageXOffset;
-    const y = rect.top + rect.height/2 + window.pageYOffset;
+    const x = rect.left + rect.width/2;
+    const y = rect.top + rect.height/2;
     
-    // Set ripple position
-    ripple.style.left = `${x}px`;
-    ripple.style.top = `${y}px`;
+    // Set posisi overlay ke tengah tombol
+    overlay.style.left = `${x}px`;
+    overlay.style.top = `${y}px`;
     
-    // Trigger animation
-    void ripple.offsetWidth; // Trigger reflow
-    ripple.style.animation = 'ripple 0.6s ease-out';
+    // Trigger animasi
+    overlay.style.transform = 'translate(-50%, -50%) scale(0)';
+    overlay.style.opacity = '0';
+    void overlay.offsetWidth; // Trigger reflow
     
-    // Toggle theme after animation midpoint
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    // Animasi overlay
+    overlay.style.transform = 'translate(-50%, -50%) scale(1)';
+    overlay.style.opacity = '0.2';
+    overlay.style.transition = 'all 1s cubic-bezier(0.4, 0.0, 0.2, 1)';
+    
+    // Update tema setelah 300ms
     setTimeout(() => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
         localStorage.setItem('theme', newTheme);
-        updateThemeIcon(newTheme);
+        
+        // Reset overlay setelah animasi
+        setTimeout(() => {
+            overlay.style.transition = 'none';
+            overlay.style.transform = 'translate(-50%, -50%) scale(0)';
+            overlay.style.opacity = '0';
+        }, 1000);
     }, 300);
-};
-
-const updateThemeIcon = (theme) => {
-    const themeIcon = document.querySelector('.theme-icon');
-    themeIcon.style.transform = theme === 'dark' ? 'rotate(180deg)' : 'rotate(0deg)';
 };
 
 // ======================
@@ -228,10 +235,6 @@ window.onclick = (e) => {
     const modal = document.getElementById('participantModal');
     if (e.target === modal) modal.style.display = 'none';
 };
-
-document.getElementById('themeRipple').addEventListener('animationend', () => {
-    document.getElementById('themeRipple').style.animation = '';
-});
 
 // ======================
 // INITIALIZATION
