@@ -3,25 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toggle Theme dengan Animasi Lingkaran</title>
+    <title>Ripple Theme Transition</title>
     <style>
         :root {
-            --light-bg: #f0f2f5;
-            --dark-bg: #1a1a1a;
-            --primary: #6D9F71;
-            --duration: 0.6s;
+            --light-color: #ffffff;
+            --dark-color: #1a1a1a;
+            --primary-color: #6D9F71;
+            --ripple-duration: 0.8s;
         }
 
         body {
             margin: 0;
             min-height: 100vh;
             font-family: Arial, sans-serif;
-            background: var(--light-bg);
-            transition: background-color var(--duration) ease;
+            transition: background-color 0.01s; /* Hanya untuk inisialisasi */
+            position: relative;
+            overflow: hidden;
         }
 
-        body.dark {
-            background-color: var(--dark-bg);
+        .theme-ripple {
+            position: absolute;
+            width: 100vmax;
+            height: 100vmax;
+            background: var(--dark-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            pointer-events: none;
+            mix-blend-mode: difference;
         }
 
         .theme-toggle {
@@ -32,78 +40,93 @@
             height: 50px;
             border: none;
             border-radius: 50%;
-            background: var(--primary);
+            background: var(--primary-color);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
-        }
-
-        .theme-toggle::before {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: var(--dark-bg);
-            border-radius: 50%;
-            transform: scale(0);
-            transition: transform var(--duration) ease;
+            z-index: 1000;
         }
 
         .theme-toggle i {
-            position: relative;
             color: white;
             font-size: 1.2rem;
-            transition: transform var(--duration) ease;
+            transition: transform var(--ripple-duration) ease;
         }
 
-        /* Dark mode state */
-        .dark .theme-toggle::before {
-            transform: scale(30);
+        /* Animasi */
+        @keyframes ripple-dark {
+            to {
+                transform: translate(-50%, -50%) scale(4);
+                opacity: 1;
+            }
         }
 
-        .dark .theme-toggle i {
-            transform: rotate(180deg);
-        }
-
-        /* Animasi klik */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.8); }
-            100% { transform: scale(1); }
-        }
-
-        .theme-toggle:active {
-            animation: pulse 0.3s ease;
+        @keyframes ripple-light {
+            to {
+                transform: translate(-50%, -50%) scale(4);
+                opacity: 0;
+            }
         }
     </style>
 </head>
-<body>
+<body data-theme="light">
     <button class="theme-toggle" id="toggleBtn">
         <i class="fas fa-moon"></i>
     </button>
 
     <script>
         const toggleBtn = document.getElementById('toggleBtn');
-        let isDark = localStorage.getItem('theme') === 'dark';
+        let currentTheme = localStorage.getItem('theme') || 'light';
         
-        function toggleTheme() {
-            isDark = !isDark;
-            document.body.classList.toggle('dark', isDark);
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'theme-ripple';
+            
+            // Set posisi berdasarkan klik
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            // Tentukan animasi berdasarkan tema
+            if(currentTheme === 'light') {
+                ripple.style.background = var(--dark-color);
+                ripple.style.animation = `ripple-dark ${var(--ripple-duration)} ease-out forwards`;
+                document.body.dataset.theme = 'dark';
+            } else {
+                ripple.style.background = var(--light-color);
+                ripple.style.animation = `ripple-light ${var(--ripple-duration)} ease-out forwards`;
+                document.body.dataset.theme = 'light';
+            }
+            
+            document.body.appendChild(ripple);
+            
+            // Hapus ripple setelah animasi
+            setTimeout(() => ripple.remove(), var(--ripple-duration) * 1000);
+        }
+
+        function toggleTheme(e) {
+            const rect = toggleBtn.getBoundingClientRect();
+            const x = rect.left + rect.width/2;
+            const y = rect.top + rect.height/2;
+            
+            createRipple(x, y);
+            
+            // Update state dan local storage
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            localStorage.setItem('theme', currentTheme);
             
             // Update icon
-            const icon = toggleBtn.querySelector('i');
-            icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            toggleBtn.querySelector('i').className = currentTheme === 'dark' 
+                ? 'fas fa-sun' 
+                : 'fas fa-moon';
         }
 
-        // Inisialisasi tema
-        if (isDark) {
-            document.body.classList.add('dark');
+        // Inisialisasi
+        if(currentTheme === 'dark') {
+            document.body.style.backgroundColor = var(--dark-color);
             toggleBtn.querySelector('i').className = 'fas fa-sun';
         }
-
+        
         toggleBtn.addEventListener('click', toggleTheme);
     </script>
 </body>
