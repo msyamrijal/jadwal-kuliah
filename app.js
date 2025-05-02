@@ -8,46 +8,47 @@ let allSchedules = [];
 const initTheme = () => {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeIcon(savedTheme);
 };
 
-const toggleTheme = (e) => {
-    const themeToggle = e.currentTarget;
+const toggleTheme = () => {
+    const themeToggle = document.getElementById('themeToggle');
     const overlay = document.getElementById('themeOverlay');
+    const body = document.documentElement;
     
-    // Dapatkan posisi tombol relatif terhadap viewport
+    // Dapatkan posisi tombol
     const rect = themeToggle.getBoundingClientRect();
     const x = rect.left + rect.width/2;
     const y = rect.top + rect.height/2;
     
-    // Set posisi overlay ke tengah tombol
+    // Set posisi overlay
     overlay.style.left = `${x}px`;
     overlay.style.top = `${y}px`;
     
-    // Trigger animasi
-    overlay.style.transform = 'translate(-50%, -50%) scale(0)';
-    overlay.style.opacity = '0';
-    void overlay.offsetWidth; // Trigger reflow
+    const currentTheme = body.getAttribute('data-theme');
     
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    
-    // Animasi overlay
-    overlay.style.transform = 'translate(-50%, -50%) scale(1)';
-    overlay.style.opacity = '0.2';
-    overlay.style.transition = 'all 1s cubic-bezier(0.4, 0.0, 0.2, 1)';
-    
-    // Update tema setelah 300ms
-    setTimeout(() => {
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        
-        // Reset overlay setelah animasi
+    if(currentTheme === 'dark') {
+        // Transition ke light mode
+        overlay.style.transform = 'translate(-50%, -50%) scale(0)';
         setTimeout(() => {
-            overlay.style.transition = 'none';
-            overlay.style.transform = 'translate(-50%, -50%) scale(0)';
-            overlay.style.opacity = '0';
-        }, 1000);
-    }, 300);
+            body.setAttribute('data-theme', 'light');
+            localStorage.setItem('theme', 'light');
+            updateThemeIcon('light');
+        }, 500);
+    } else {
+        // Transition ke dark mode
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+        updateThemeIcon('dark');
+        setTimeout(() => {
+            overlay.style.transform = 'translate(-50%, -50%) scale(100)';
+        }, 10);
+    }
+};
+
+const updateThemeIcon = (theme) => {
+    const themeIcon = document.querySelector('.theme-icon');
+    themeIcon.style.transform = theme === 'dark' ? 'rotate(180deg)' : 'rotate(0deg)';
 };
 
 // ======================
