@@ -65,12 +65,6 @@
         @keyframes spin {
             100% { transform: rotate(360deg); }
         }
-        
-        .date-indicator {
-            font-size: 0.9rem;
-            padding: 3px 10px;
-            border-radius: 15px;
-        }
     </style>
 </head>
 <body>
@@ -124,19 +118,7 @@
         async function loadData() {
             try {
                 const response = await fetch(API_URL);
-                const rawData = await response.json();
-                
-                const today = new Date();
-                today.setHours(0,0,0,0);
-                
-                allData = rawData
-                    .filter(item => {
-                        const itemDate = new Date(item.Tanggal);
-                        itemDate.setHours(0,0,0,0);
-                        return itemDate >= today;
-                    })
-                    .sort((a, b) => new Date(a.Tanggal) - new Date(b.Tanggal));
-                
+                allData = await response.json();
                 initFilters();
                 renderData(allData);
             } catch (error) {
@@ -197,9 +179,7 @@
         function renderData(data) {
             const container = document.getElementById('jadwal-container');
             const noResults = document.getElementById('no-results');
-            const today = new Date();
-            today.setHours(0,0,0,0);
-
+            
             container.innerHTML = '';
             
             if (data.length === 0) {
@@ -210,22 +190,17 @@
             noResults.classList.add('d-none');
 
             data.forEach(item => {
-                const itemDate = new Date(item.Tanggal);
-                const isToday = itemDate.getTime() === today.getTime();
-                
                 const card = document.createElement('div');
                 card.className = 'col-12 col-md-6 col-lg-4';
                 card.innerHTML = `
                     <div class="glass-card h-100 p-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <span class="schedule-badge">${item.Institusi}</span>
-                            <div class="d-flex align-items-center gap-2">
-                                ${isToday ? 
-                                    '<span class="date-indicator bg-danger">HARI INI</span>' : 
-                                    '<i class="fas fa-calendar-day"></i>'
-                                }
-                                <small>${formatDate(item.Tanggal)}</small>
-                            </div>
+                            <small>${new Date(item.Tanggal).toLocaleDateString('id-ID', {
+                                weekday: 'long', 
+                                day: 'numeric', 
+                                month: 'long'
+                            })}</small>
                         </div>
                         <h4 class="mb-3">${item.Mata_Pelajaran}</h4>
                         <div class="participants mb-3">
@@ -235,44 +210,28 @@
                                 </span>
                             `).join('')}
                         </div>
-                        ${getDateStatus(item.Tanggal)}
+                        <div class="text-end">
+                            <button class="btn btn-sm btn-outline-light" 
+                                    onclick="shareSchedule('${item.Mata_Pelajaran}', '${item.Tanggal}')">
+                                <i class="fas fa-share"></i>
+                            </button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
 
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            const options = {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-            };
-            
-            if (date.getFullYear() === new Date().getFullYear()) {
-                delete options.year;
+        function shareSchedule(title, date) {
+            const text = `Jadwal ${title} pada ${date}`;
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Bagikan Jadwal',
+                    text: text,
+                });
+            } else {
+                prompt('Salin tautan berikut:', window.location.href);
             }
-            
-            return date.toLocaleDateString('id-ID', options);
-        }
-
-        function getDateStatus(dateString) {
-            const date = new Date(dateString);
-            const today = new Date();
-            const diffTime = date - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            let status = '';
-            if (diffDays === 0) {
-                status = '<div class="text-end mt-2"><span class="date-indicator bg-success">Sedang Berlangsung</span></div>';
-            } else if (diffDays === 1) {
-                status = '<div class="text-end mt-2"><span class="date-indicator bg-primary">Besok</span></div>';
-            } else if (diffDays <= 7) {
-                status = `<div class="text-end mt-2"><span class="date-indicator bg-warning">${diffDays} Hari Lagi</span></div>`;
-            }
-            return status;
         }
 
         // Event Listeners
