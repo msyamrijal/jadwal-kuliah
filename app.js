@@ -4,37 +4,59 @@ let allSchedules = [];
 let currentTheme = localStorage.getItem('theme') || 'light';
 
 // ======================
-// THEME MANAGEMENT
+// UPDATED THEME MANAGEMENT
 // ======================
-const initTheme = () => {
-    document.documentElement.setAttribute('data-theme', currentTheme);
-    updateThemeIcon();
+const createRippleEffect = (x, y) => {
+    const ripple = document.getElementById('themeRipple');
+    const diameter = Math.max(window.innerWidth, window.innerHeight);
+    
+    Object.assign(ripple.style, {
+        width: `${diameter}px`,
+        height: `${diameter}px`,
+        left: `${x - diameter/2}px`,
+        top: `${y - diameter/2}px`,
+        opacity: '0.2',
+        transform: 'scale(0)'
+    });
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+        ripple.style.transform = 'scale(1.5)';
+        ripple.style.opacity = '0';
+    });
+    
+    // Reset ripple after animation
+    setTimeout(() => {
+        ripple.style.opacity = '0';
+        ripple.style.transform = 'scale(0)';
+    }, 800);
 };
 
 const toggleTheme = () => {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
     
-    // Trigger circle animation
-    themeToggle.classList.add('active');
-    setTimeout(() => themeToggle.classList.remove('active'), 600);
+    // Get toggle button position
+    const toggleRect = themeToggle.getBoundingClientRect();
+    const centerX = toggleRect.left + toggleRect.width/2;
+    const centerY = toggleRect.top + toggleRect.height/2;
     
-    currentTheme = newTheme;
-    updateThemeIcon();
+    // Create ripple effect
+    createRippleEffect(centerX, centerY);
+    
+    // Delay theme change to sync with ripple
+    setTimeout(() => {
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        currentTheme = newTheme;
+        updateThemeIcon();
+    }, 200);
 };
 
 const updateThemeIcon = () => {
-    const sun = document.querySelector('.sun');
-    const moon = document.querySelector('.moon');
-    
-    if(currentTheme === 'dark') {
-        sun.style.transform = 'rotate(90deg) scale(0)';
-        moon.style.transform = 'rotate(0deg) scale(1)';
-    } else {
-        sun.style.transform = 'rotate(0deg) scale(1)';
-        moon.style.transform = 'rotate(-90deg) scale(0)';
-    }
+    const themeIcon = document.querySelector('.theme-icon');
+    themeIcon.style.transform = currentTheme === 'dark' 
+        ? 'rotate(180deg)' 
+        : 'rotate(0deg)';
 };
 
 // ======================
